@@ -10,35 +10,43 @@ import Foundation
 
 final class NetworkLogger: NetworkLoggerProtocol {
  
-    private let isEnabled: Bool
+    private let configuration: LogConfiguration
+    private let formatter: NetworkLogFormattingProtocol
+    private let destination: NetworkLogDestinationProtocol
+   
+    init(
+        configuration: LogConfiguration,
+        formatter: NetworkLogFormattingProtocol,
+        destination: NetworkLogDestinationProtocol
+    ) {
 
-    init(isEnabled: Bool = true ) {
-        self.isEnabled = isEnabled
+        self.configuration = configuration
+        self.formatter     = formatter
+        self.destination   = destination
+
     }
     
- 
-    func log(_ request: URLRequest) {
-        guard isEnabled else { return }
-        print("➡️  [\(request.httpMethod ?? "?")] \(request.url?.absoluteString ?? "")")
+   
+    func log(level: LogLevel, entry: NetworkLogEntry) {
+        
+        guard shouldLog(level: level) else {
+            return
+        }
+
+        let message = formatter.format(
+            level: level,
+            entry: entry
+        )
+        
+        destination.write(message)
     }
     
-    func log(_ response: URLResponse, data: Data) {
-        guard isEnabled else { return }
-        let code = (response as? HTTPURLResponse)?.statusCode ?? 0
-        print("⬅️  [ HTTP\(code) - \(data.count) bytes] ")
-    }
     
-    func log(_ error: any Error, for request: URLRequest) {
-        guard isEnabled else { return }
-        print("❌  \(request.url?.absoluteString ?? ""): \(error.localizedDescription)")
+    private func shouldLog(level: LogLevel) -> Bool {
+        level >= configuration.minimumLevel
     }
+   
     
-}
 
-
-
-final class SilentLogger: NetworkLoggerProtocol {
-    func log(_ request: URLRequest) {}
-    func log(_ response: URLResponse, data: Data) {}
-    func log(_ error: Error, for request: URLRequest) {}
+    
 }
