@@ -25,7 +25,7 @@ final class NetworkClient: NetworkClientProtocol {
             d.dateDecodingStrategy = .iso8601
             return d
         }(),
-        logger:   NetworkLoggerProtocol = NetworkLogger()
+        logger:   NetworkLoggerProtocol
     ) {
         self.builder = builder
         self.session = session
@@ -38,7 +38,7 @@ final class NetworkClient: NetworkClientProtocol {
     
     func request<T: Decodable & Sendable>(endpoint: Endpoint, type: T.Type, attempt: Int = 0) async throws -> T {
         let urlRequest = try builder.build(from: endpoint)
-        logger.log( urlRequest)
+//        logger.log( urlRequest)
 
         let (data, response): (Data, URLResponse)
 
@@ -47,11 +47,11 @@ final class NetworkClient: NetworkClientProtocol {
             (data, response) = try await session.data(for: urlRequest)
         } catch let urlError as URLError {
             let mapped = mapURLError(urlError)
-            logger.log(mapped, for: urlRequest)
+//            logger.log(mapped, for: urlRequest)
             throw mapped
         }
 
-        logger.log(response, data: data)
+//        logger.log(response, data: data)
 
         guard let http = response as? HTTPURLResponse else {
             throw NetworkError.invalidResponse(code: -1, data: data)

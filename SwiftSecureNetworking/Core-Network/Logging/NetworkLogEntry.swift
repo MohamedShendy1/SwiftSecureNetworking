@@ -10,25 +10,31 @@ import Foundation
 
 struct NetworkLogEntry {
 
-    let id: UUID
+    let requestID: UUID
 
-    let method: String
+    let method: HTTPMethod
 
     let url: URL
 
     let statusCode: Int?
 
-    let requestHeaders: [String:String]
+    let requestHeaders: [String: String]
 
-    let responseHeaders: [AnyHashable:Any]
+    let responseHeaders: [String: String]
 
     let requestBody: Data?
 
     let responseBody: Data?
 
+    let responseSize: Int
+
+    let mimeType: String?
+
     let duration: TimeInterval
 
-    let error: Error?
+    let error: NetworkError?
 
-    let date: Date
+    let startedAt: Date
+
+    let isSuccess: Bool
 }

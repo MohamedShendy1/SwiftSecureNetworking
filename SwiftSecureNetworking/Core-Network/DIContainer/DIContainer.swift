@@ -44,22 +44,22 @@ final class DIContainer {
     // MARK: URLSession (Pinned)
     // ========================================================
 
-//    private lazy var session: URLSession = {
-//        let config = URLSessionConfiguration.default
-//        config.timeoutIntervalForRequest = 30
-//        config.timeoutIntervalForResource = 60
-//
-//        let delegate = PinningSessionDelegate(pinnedHashes: [
-//            "YOUR_CERT_SHA256_HEX_HASH_HERE",
-//            "YOUR_BACKUP_CERT_HASH_HERE"
-//        ])
-//
-//        return URLSession(
-//            configuration: config,
-//            delegate: delegate,
-//            delegateQueue: nil
-//        )
-//    }()
+    private lazy var session: URLSession = {
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = 30
+        config.timeoutIntervalForResource = 60
+
+        let delegate = PinningSessionDelegate(pinnedHashes: [
+            "YOUR_CERT_SHA256_HEX_HASH_HERE",
+            "YOUR_BACKUP_CERT_HASH_HERE"
+        ])
+
+        return URLSession(
+            configuration: config,
+            delegate: delegate,
+            delegateQueue: nil
+        )
+    }()
 
     // ========================================================
     // MARK: Body Encoder
@@ -73,12 +73,12 @@ final class DIContainer {
     // MARK: Request Builder
     // ========================================================
 
-//    private lazy var requestBuilder: RequestBuilder = {
-//        RequestBuilder(
-//            bodyEncoder: bodyEncoder,
+    private lazy var requestBuilder: RequestBuilder = {
+        RequestBuilder(
+            bodyEncoder: bodyEncoder
 //            tokenProvider: tokenProvider
-//        )
-//    }()
+        )
+    }()
 
     // ========================================================
     // MARK: JSON Decoder (single source of truth)
