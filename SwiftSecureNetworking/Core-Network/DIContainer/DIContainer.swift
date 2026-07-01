@@ -121,9 +121,17 @@ final class DIContainer {
     // MARK: Log Formatter
     // ========================================================
 
+   
+    
     private lazy var logFormatter: NetworkLogFormattingProtocol = {
-        DefaultNetworkLogFormatter()
+
+        DefaultNetworkLogFormatter(
+            configuration: logConfiguration
+        )
+
     }()
+    
+    
 
     // ========================================================
     // MARK: Log Destination
