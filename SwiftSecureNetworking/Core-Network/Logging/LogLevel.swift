@@ -11,21 +11,6 @@
 
 import Foundation
 
-//enum LogLevel: Int {
-//
-//    case trace = 0
-//
-//    case debug
-//
-//    case info
-//
-//    case warning
-//
-//    case error
-//
-//    case critical
-//}
-
 enum LogLevel: Int {
 
     case trace

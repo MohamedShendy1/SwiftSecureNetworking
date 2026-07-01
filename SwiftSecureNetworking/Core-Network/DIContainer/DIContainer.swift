@@ -100,22 +100,16 @@ final class DIContainer {
 //    }()
 
     
+    
+    
     // ========================================================
     // MARK: Log Configuration
     // ========================================================
 
-    private lazy var logConfiguration: LogConfiguration = {
-
-        switch environment {
-
-        case .debug:
-            return .debug
-
-        case .release:
-            return .release
-        }
-
-    }()
+    
+    private var logConfiguration: LogConfiguration {
+        environment.logConfiguration
+    }
 
     // ========================================================
     // MARK: Log Formatter
@@ -198,6 +192,19 @@ enum AppEnvironment {
         switch self {
         case .debug: return true
         case .release: return false
+        }
+    }
+}
+
+extension AppEnvironment {
+
+    var logConfiguration: LogConfiguration {
+        switch self {
+        case .debug:
+            return .debug
+
+        case .release:
+            return .release
         }
     }
 }
