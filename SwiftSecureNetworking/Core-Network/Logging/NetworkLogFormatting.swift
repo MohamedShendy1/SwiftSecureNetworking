@@ -89,7 +89,7 @@ extension DefaultNetworkLogFormatter {
 
 
 // ========================================================
-// MARK: - Request
+// MARK: - Request 
 // ========================================================
 
 extension DefaultNetworkLogFormatter {
@@ -226,17 +226,56 @@ extension DefaultNetworkLogFormatter {
 }
 
 
+
 // ========================================================
 // MARK: - Error
 // ========================================================
 
 extension DefaultNetworkLogFormatter {
-
+    
     private func formatError(
         _ entry: NetworkLogEntry
     ) -> String {
-        ""
+        
+        guard entry.error != nil else {
+            return ""
+        }
+        
+        return [
+            errorTitle,
+            errorType(entry),
+            errorDescription(entry)
+        ]
+            .filter { !$0.isEmpty }
+            .joined(separator: "\n\n")
     }
+    
+    
+    private var errorTitle: String {
+        "❌ Error"
+    }
+    
+    
+    private func errorType (_ entry: NetworkLogEntry) -> String {
+        
+        guard let error  = entry.error else {
+            return ""
+        }
+        return "Type: \(type(of: error))"
+        
+    }
+    
+    
+    private func errorDescription(_ entry: NetworkLogEntry ) -> String{
+        guard let error = entry.error else {
+            return ""
+        }
+        
+        return "Description : \(error.localizedDescription)"
+    }
+    
+    
+    
 }
 
 
