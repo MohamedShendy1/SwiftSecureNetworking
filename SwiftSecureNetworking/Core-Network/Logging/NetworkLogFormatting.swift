@@ -89,7 +89,7 @@ extension DefaultNetworkLogFormatter {
 
 
 // ========================================================
-// MARK: - Request 
+// MARK: - Request
 // ========================================================
 
 extension DefaultNetworkLogFormatter {
@@ -127,6 +127,24 @@ extension DefaultNetworkLogFormatter {
         \(entry.requestHeaders)
         """
     }
+    
+    
+    private func formatHeaders(
+        _ headers: [String:String]
+    ) -> String {
+
+        var lines: [String] = []
+
+        for (key, value) in headers.sorted(by: { $0.key < $1.key }) {
+
+            lines.append("\(key): \(value)")
+
+        }
+
+        return lines.joined(separator: "\n")
+
+    }
+    
     
     // MARK: - Body
     private func requestBody(_ entry: NetworkLogEntry) -> String {
@@ -185,7 +203,7 @@ extension DefaultNetworkLogFormatter {
     
     // MARK: - Duration
     private func responseDuration(_ entry: NetworkLogEntry ) -> String {
-        "Duration : \(formatDuration(entry.duration))s"
+        "Duration : \(formatDuration(entry.duration))"
     }
     
     
@@ -291,3 +309,31 @@ extension DefaultNetworkLogFormatter {
         ""
     }
 }
+
+/**
+Header
+    headerTitle()
+    headerMethod()
+    headerURL()
+    headerDate()
+
+Request
+    requestTitle()
+    requestHeaders()
+    requestBody()
+
+Response
+    responseTitle()
+    responseStatus()
+    responseDuration()
+    responseSize()
+    responseMimeType()
+
+Error
+    errorTitle()
+    errorType()
+    errorDescription()
+
+Footer
+    footerSeparator()
+**/

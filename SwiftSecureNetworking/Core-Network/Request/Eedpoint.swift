@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol Endpoint {
+protocol Endpoint{
     var baseURL: URL { get }
     var path: String { get }
     var method: HTTPMethod { get }
@@ -18,6 +18,8 @@ protocol Endpoint {
 }
 
 
+
+
 extension Endpoint {
     
     var heade: [String: String] {["contentType": "Aplication/ json", "Accept": "Aplication/json" ]}
@@ -26,3 +28,6 @@ extension Endpoint {
     var requiresAuth: Bool {true}
     
 }
+
+
+

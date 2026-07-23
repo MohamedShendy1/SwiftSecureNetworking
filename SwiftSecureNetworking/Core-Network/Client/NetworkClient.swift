@@ -9,14 +9,14 @@ import Foundation
 
 final class NetworkClient: NetworkClientProtocol {
     
-    private let builder:  RequestBuilder
+    private let builder:  RequestBuilderProtocol
     private let session:  URLSession
 //    private let retry:    RetryStrategy
     private let decoder:  JSONDecoder          // FIX 3 — injected, not inline
     private let logger:   NetworkLoggerProtocol
 
     init(
-        builder:  RequestBuilder,
+        builder:  RequestBuilderProtocol,
         session:  URLSession,
 //        retry: RetryStrategy = DefaultRetryStrategy(),
         decoder:  JSONDecoder = {               // FIX 3
@@ -37,21 +37,42 @@ final class NetworkClient: NetworkClientProtocol {
 
     
     func request<T: Decodable & Sendable>(endpoint: Endpoint, type: T.Type, attempt: Int = 0) async throws -> T {
+       
         let urlRequest = try builder.build(from: endpoint)
-//        logger.log( urlRequest)
+       //To get teh start time for the request - > (For the request log )
+        let startedAt = Date()
 
         let (data, response): (Data, URLResponse)
-
-        // FIX 2 — URLError caught and mapped here, never escapes
+        
+       
         do {
             (data, response) = try await session.data(for: urlRequest)
         } catch let urlError as URLError {
+            
             let mapped = mapURLError(urlError)
-//            logger.log(mapped, for: urlRequest)
+
+            let duration = Date().timeIntervalSince(startedAt)
+
+            log(
+                level: .error,
+                request: urlRequest,
+                response: nil,
+                responseData: nil,
+                error: mapped,
+                startedAt: startedAt,
+                duration: duration
+            )
+
             throw mapped
         }
+        
+        
 
-//        logger.log(response, data: data)
+// NOTE: -  Calculate the Request duration time -> (For the request log )
+//        here because  We want the logger to measure network latency only.
+        
+        let duration = Date().timeIntervalSince(startedAt)
+        
 
         guard let http = response as? HTTPURLResponse else {
             throw NetworkError.invalidResponse(code: -1, data: data)
@@ -59,7 +80,21 @@ final class NetworkClient: NetworkClientProtocol {
 
         // Map HTTP status codes to typed errors
         let networkError = mapStatusCode(http.statusCode, data: data)
+        
+        if let networkError {
+            log(
+                level: .error,
+                request: urlRequest,
+                response: http,
+                responseData: data,
+                error: networkError,
+                startedAt: startedAt,
+                duration: duration
+            )
 
+            throw networkError
+        }
+   
         
         //TODO: - Retry
         
@@ -73,13 +108,44 @@ final class NetworkClient: NetworkClientProtocol {
 //            throw networkError
 //        }
 
-        // FIX 3 — decoder is pre-configured, not inline JSONDecoder()
+
         do {
-            return try decoder.decode(T.self, from: data)
+
+            let model = try decoder.decode(T.self, from: data)
+
+            log(
+                level: .info,
+                request: urlRequest,
+                response: http,
+                responseData: data,
+                error: nil,
+                startedAt: startedAt,
+                duration: duration
+            )
+
+            return model
+            
         } catch {
-            throw NetworkError.decodingFailed(error)
+            
+            let decodingError = NetworkError.decodingFailed(error)
+
+            log(
+                level: .error,
+                request: urlRequest,
+                response: http,
+                responseData: data,
+                error: decodingError,
+                startedAt: startedAt,
+                duration: duration
+            )
+
+            throw decodingError
         }
+        
     }
+    
+    
+    
     
     
     // MARK: Private helpers
@@ -111,5 +177,93 @@ final class NetworkClient: NetworkClientProtocol {
         }
     }
     
+    
+    
+    
+    // ========================================================
+    // MARK: -  make Response Headers Helper
+    // ========================================================
+
+    
+    private func makeResponseHeaders(
+        from response: HTTPURLResponse?
+    ) -> [String:String] {
+
+        guard let response else {
+            return [:]
+        }
+
+        return response.allHeaderFields.reduce(into: [:]) { result, item in
+            result[String(describing: item.key)] = String(describing: item.value)
+        }
+    }
+    
+    
+    
+    // ========================================================
+    // MARK: -  Log Entry Factory
+    // ========================================================
+
+    private func makeLogEntry(
+        request: URLRequest,
+        response: HTTPURLResponse?,
+        responseData: Data?,
+        error: NetworkError?,
+        startedAt: Date,
+        duration: TimeInterval
+    ) -> NetworkLogEntry{
+        
+        guard let url = request.url else {
+            preconditionFailure("URLRequest must contain a URL.")
+        }
+        
+        return NetworkLogEntry(
+            requestID: UUID(),
+            method: HTTPMethod(rawValue: request.httpMethod ?? "GET") ?? .GET,
+            url: url,
+            statusCode: response?.statusCode,
+            requestHeaders: request.allHTTPHeaderFields ?? [:],
+            responseHeaders: makeResponseHeaders(from: response),
+            requestBody: request.httpBody,
+            responseBody: responseData,
+            responseSize: responseData?.count ?? 0,
+            mimeType: response?.mimeType,
+            duration: duration,
+            error: error,
+            startedAt: startedAt,
+            isSuccess: error == nil
+        )
+    }
+    
+  
+    
+    // ========================================================
+    // MARK: -  Log Entry
+    // ========================================================
+
+    private func log(
+        level: LogLevel,
+        request: URLRequest,
+        response: HTTPURLResponse?,
+        responseData: Data?,
+        error: NetworkError?,
+        startedAt: Date,
+        duration: TimeInterval
+    ) {
+
+        let entry = makeLogEntry(
+            request: request,
+            response: response,
+            responseData: responseData,
+            error: error,
+            startedAt: startedAt,
+            duration: duration
+        )
+
+        logger.log(
+            level: level,
+            entry: entry
+        )
+    }
     
 }
