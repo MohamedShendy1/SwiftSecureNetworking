@@ -14,7 +14,8 @@ final class NetworkClient: NetworkClientProtocol {
 //    private let retry:    RetryStrategy
     private let decoder:  JSONDecoder          // FIX 3 — injected, not inline
     private let logger:   NetworkLoggerProtocol
-
+    private let logEntryFactory: NetworkLogEntryFactoryProtocol
+    
     init(
         builder:  RequestBuilderProtocol,
         session:  URLSession,
@@ -25,13 +26,15 @@ final class NetworkClient: NetworkClientProtocol {
             d.dateDecodingStrategy = .iso8601
             return d
         }(),
-        logger:   NetworkLoggerProtocol
+        logger:   NetworkLoggerProtocol,
+        logEntryFactory: NetworkLogEntryFactoryProtocol
     ) {
         self.builder = builder
         self.session = session
 //        self.retry   = retry
         self.decoder = decoder
         self.logger  = logger
+        self.logEntryFactory =  logEntryFactory
     }
     
 
@@ -179,64 +182,6 @@ final class NetworkClient: NetworkClientProtocol {
     
     
     
-    
-    // ========================================================
-    // MARK: -  make Response Headers Helper
-    // ========================================================
-
-    
-    private func makeResponseHeaders(
-        from response: HTTPURLResponse?
-    ) -> [String:String] {
-
-        guard let response else {
-            return [:]
-        }
-
-        return response.allHeaderFields.reduce(into: [:]) { result, item in
-            result[String(describing: item.key)] = String(describing: item.value)
-        }
-    }
-    
-    
-    
-    // ========================================================
-    // MARK: -  Log Entry Factory
-    // ========================================================
-
-    private func makeLogEntry(
-        request: URLRequest,
-        response: HTTPURLResponse?,
-        responseData: Data?,
-        error: NetworkError?,
-        startedAt: Date,
-        duration: TimeInterval
-    ) -> NetworkLogEntry{
-        
-        guard let url = request.url else {
-            preconditionFailure("URLRequest must contain a URL.")
-        }
-        
-        return NetworkLogEntry(
-            requestID: UUID(),
-            method: HTTPMethod(rawValue: request.httpMethod ?? "GET") ?? .GET,
-            url: url,
-            statusCode: response?.statusCode,
-            requestHeaders: request.allHTTPHeaderFields ?? [:],
-            responseHeaders: makeResponseHeaders(from: response),
-            requestBody: request.httpBody,
-            responseBody: responseData,
-            responseSize: responseData?.count ?? 0,
-            mimeType: response?.mimeType,
-            duration: duration,
-            error: error,
-            startedAt: startedAt,
-            isSuccess: error == nil
-        )
-    }
-    
-  
-    
     // ========================================================
     // MARK: -  Log Entry
     // ========================================================
@@ -251,7 +196,7 @@ final class NetworkClient: NetworkClientProtocol {
         duration: TimeInterval
     ) {
 
-        let entry = makeLogEntry(
+        let entry = logEntryFactory.make(
             request: request,
             response: response,
             responseData: responseData,

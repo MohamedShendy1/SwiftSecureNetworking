@@ -22,25 +22,6 @@ final class DIContainer {
     }
 
     // ========================================================
-    // MARK: Keychain
-    // ========================================================
-
-//    private lazy var keychain: KeychainStoring = {
-//        KeychainManager(
-//            service: "com.yourapp.auth",
-//            account: "accessToken"
-//        )
-//    }()
-
-    // ========================================================
-    // MARK: Token Provider
-    // ========================================================
-
-//    private lazy var tokenProvider: TokenProviding = {
-//        SecureTokenProvider(keychain: keychain)
-//    }()
-
-    // ========================================================
     // MARK: URLSession (Pinned)
     // ========================================================
 
@@ -91,22 +72,10 @@ final class DIContainer {
         return d
     }()
 
-    // ========================================================
-    // MARK: Retry Strategy
-    // ========================================================
-
-//    private lazy var retryStrategy: RetryStrategy = {
-//        DefaultRetryStrategy(maxAttempts: 3)
-//    }()
-
-    
-    
     
     // ========================================================
     // MARK: Log Configuration
     // ========================================================
-
-    
     private var logConfiguration: LogConfiguration {
         environment.logConfiguration
     }
@@ -114,23 +83,15 @@ final class DIContainer {
     // ========================================================
     // MARK: Log Formatter
     // ========================================================
-
-   
-    
     private lazy var logFormatter: NetworkLogFormattingProtocol = {
-
         DefaultNetworkLogFormatter(
             configuration: logConfiguration
         )
-
     }()
-    
-    
 
     // ========================================================
     // MARK: Log Destination
     // ========================================================
-
     private lazy var logDestination: NetworkLogDestinationProtocol = {
         ConsoleNetworkLogDestination()
     }()
@@ -150,16 +111,26 @@ final class DIContainer {
     }()
     
     // ========================================================
-    // MARK: Network Client
+    // MARK: Log Entry Factory
+    // ========================================================
+
+    private lazy var logEntryFactory: NetworkLogEntryFactoryProtocol = {
+        DefaultNetworkLogEntryFactory()
+    }()
+    
+    // ========================================================
+    // MARK: NetworkClient
     // ========================================================
 
     private lazy var networkClient: NetworkClientProtocol = {
         NetworkClient(
             builder: requestBuilder,
             session: session,
-//            retry: retryStrategy,
+            // retry: retryStrategy,
+
             decoder: decoder,
-            logger: logger
+            logger: logger,
+            logEntryFactory: logEntryFactory
         )
     }()
 
@@ -170,14 +141,7 @@ final class DIContainer {
     func makeNetworkClient() -> NetworkClientProtocol {
         networkClient
     }
-
-//    func makeKeychain() -> KeychainStoring {
-//        keychain
-//    }
-//
-//    func makeTokenProvider() -> TokenProviding {
-//        tokenProvider
-//    }
+    
 }
 
 
