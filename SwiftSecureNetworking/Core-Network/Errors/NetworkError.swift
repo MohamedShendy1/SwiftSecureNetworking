@@ -44,6 +44,9 @@ enum NetworkError: Error,LocalizedError {
         default: return false
         }
     }
+    
+    
 
     
 }
+
