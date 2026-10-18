@@ -7,6 +7,11 @@
 
 import Foundation
 
+
+// ============================================================
+// Endpoint describes the requet
+// ============================================================
+
 protocol Endpoint{
     var baseURL: URL { get }
     var path: String { get }
@@ -22,11 +27,11 @@ protocol Endpoint{
 
 extension Endpoint {
     
-    var heade: [String: String] {["contentType": "Aplication/ json", "Accept": "Aplication/json" ]}
+    var header: [String: String] {["contentType": "Aplication/ json", "Accept": "Aplication/json" ]}
     var body: Encodable? {nil}
     var queryItems: [URLQueryItem]? {nil}
     var requiresAuth: Bool {true}
-    
+
 }
 
 

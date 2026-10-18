@@ -39,7 +39,7 @@ final class NetworkClient: NetworkClientProtocol {
     
 
     
-    func request<T: Decodable & Sendable>(endpoint: Endpoint, type: T.Type, attempt: Int = 0) async throws -> T {
+    func request<T: Decodable>(endpoint: Endpoint, type: T.Type, attempt: Int = 0) async throws -> T {
        
         let urlRequest = try builder.build(from: endpoint)
        //To get teh start time for the request - > (For the request log )
@@ -212,3 +212,4 @@ final class NetworkClient: NetworkClientProtocol {
     }
     
 }
+

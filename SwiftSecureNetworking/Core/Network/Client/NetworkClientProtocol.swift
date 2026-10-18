@@ -6,5 +6,5 @@
 //
 
 protocol NetworkClientProtocol {
-    func request<T: Decodable & Sendable>(endpoint: Endpoint, type: T.Type, attempt: Int) async throws -> T
+    func request<T: Decodable>(endpoint: Endpoint, type: T.Type, attempt: Int) async throws -> T
 }

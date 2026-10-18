@@ -9,7 +9,7 @@
 import Foundation
 
 // ============================================================
-// MARK: RequestBuilder
+// MARK: RequestBuilder/  constructs the request.
 // ============================================================
 
 protocol RequestBuilderProtocol {
@@ -17,7 +17,9 @@ protocol RequestBuilderProtocol {
     func build(from endpoint: Endpoint) throws -> URLRequest
 }
 
+
 final class RequestBuilder: RequestBuilderProtocol {
+    
    
     let bodyEncoder: BodyEncodingStrategy
     
@@ -41,13 +43,13 @@ final class RequestBuilder: RequestBuilderProtocol {
         
         request.httpMethod = endpoint.method.rawValue
         
-        var heade = endpoint.header
+        var header = endpoint.header
         
         if endpoint.requiresAuth {
             //TODO: - throws immediately if no token
         }
         
-        heade.forEach {request.setValue($1, forHTTPHeaderField: $0)}
+        header.forEach {request.setValue($1, forHTTPHeaderField: $0)}
         
         request.httpBody = try bodyEncoder.encode(endpoint.body)
         
